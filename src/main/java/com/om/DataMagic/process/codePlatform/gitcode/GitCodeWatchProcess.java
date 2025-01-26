@@ -14,6 +14,8 @@ package com.om.DataMagic.process.codePlatform.gitcode;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.om.DataMagic.client.codePlatform.gitcode.GitCodeService;
+import com.om.DataMagic.client.codePlatform.gitcode.GitCodeClient;
+import com.om.DataMagic.domain.codePlatform.gitcode.primitive.CodePlatformEnum;
 import com.om.DataMagic.infrastructure.pgDB.converter.WatchConverter;
 import com.om.DataMagic.infrastructure.pgDB.dataobject.RepoDO;
 import com.om.DataMagic.infrastructure.pgDB.dataobject.WatchDO;
@@ -27,7 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * pr application service
+ * pr application service.
  *
  * @author zhaoyan
  * @since 2025-01-15
@@ -35,20 +37,29 @@ import java.util.List;
 @Component
 public class GitCodeWatchProcess implements DriverManager {
 
+    /**
+     * client gitee接口统一调用客户端.
+     */
     @Autowired
-    GitCodeService service;
-
+    private GitCodeClient client;
+    /**
+     * converter json类型转换.
+     */
     @Autowired
-    WatchConverter converter;
-
+    private WatchConverter converter;
+    /**
+     * client 仓库服务.
+     */
     @Autowired
-    RepoService repoService;
-
+    private RepoService repoService;
+    /**
+     * watch服务.
+     */
     @Autowired
-    WatchService watchService;
+    private WatchService watchService;
 
     /**
-     * 执行 拉取并更新指定组织下仓库信息
+     * 执行 拉取并更新指定组织下仓库信息.
      */
     @Override
     public void run() {
@@ -59,24 +70,29 @@ public class GitCodeWatchProcess implements DriverManager {
         }
         watchService.saveOrUpdateBatch(prList);
     }
+
     /**
-     * 获取GitCode平台仓库下PR信息
+     * 获取GitCode平台仓库下Watch信息.
+     *
      * @param repoDO 仓库信息
      * @return Watch信息字符串
      */
     private List<WatchDO> getWatchList(RepoDO repoDO) {
-        return formatStr(repoDO, service.getWatchInfo(repoDO.getOwnerName(), repoDO.getRepoName()));
+        return formatStr(repoDO, client.getWatchInfo(repoDO.getOwnerName(), repoDO.getRepoName()));
     }
+
     /**
-     * 转化并组装WatchDO数据
-     * @param repoDO     仓库信息
+     * 转化并组装WatchDO数据.
+     *
+     * @param repoDO        仓库信息
      * @param arrayNodeList watch信息
      * @return watchdo 对象
      */
     private List<WatchDO> formatStr(RepoDO repoDO, List<ArrayNode> arrayNodeList) {
         List<WatchDO> prDOList = new ArrayList<>();
         for (ArrayNode arrayNode : arrayNodeList) {
-            prDOList.addAll(converter.toDOList(arrayNode, repoDO.getOwnerName(),repoDO.getRepoName(),"gitcode"));
+            prDOList.addAll(converter.toDOList(arrayNode, repoDO.getOwnerName(), repoDO.getRepoName(),
+                    CodePlatformEnum.GITCODE.getText()));
         }
         return prDOList;
     }

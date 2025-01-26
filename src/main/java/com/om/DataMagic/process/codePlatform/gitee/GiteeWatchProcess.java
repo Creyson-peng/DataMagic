@@ -10,17 +10,16 @@
  Created: 2025
 */
 
-package com.om.DataMagic.process.codePlatform.gitcode;
+package com.om.DataMagic.process.codePlatform.gitee;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.om.DataMagic.client.codePlatform.gitcode.GitCodeService;
-import com.om.DataMagic.client.codePlatform.gitcode.GitCodeClient;
+import com.om.DataMagic.client.codePlatform.gitee.GiteeClient;
 import com.om.DataMagic.domain.codePlatform.gitcode.primitive.CodePlatformEnum;
-import com.om.DataMagic.infrastructure.pgDB.converter.StarConverter;
+import com.om.DataMagic.infrastructure.pgDB.converter.WatchConverter;
 import com.om.DataMagic.infrastructure.pgDB.dataobject.RepoDO;
-import com.om.DataMagic.infrastructure.pgDB.dataobject.StarDO;
+import com.om.DataMagic.infrastructure.pgDB.dataobject.WatchDO;
 import com.om.DataMagic.infrastructure.pgDB.service.RepoService;
-import com.om.DataMagic.infrastructure.pgDB.service.StarService;
+import com.om.DataMagic.infrastructure.pgDB.service.WatchService;
 import com.om.DataMagic.process.DriverManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -29,34 +28,33 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * pr application service.
+ * watch application service.
  *
  * @author pengyue
  * @since 2025-01-15
  */
 @Component
-public class GitCodeStarProcess implements DriverManager {
-
+public class GiteeWatchProcess implements DriverManager {
     /**
-     * client gitcode接口统一调用客户端.
+     *  client gitee接口统一调用客户端.
      */
     @Autowired
-    private GitCodeClient client;
+    private GiteeClient client;
     /**
-     * converter json类型转换.
+     *  converter json类型转换.
      */
     @Autowired
-    private StarConverter converter;
+    private WatchConverter converter;
     /**
-     * 仓库服务.
+     *  client 仓库服务.
      */
     @Autowired
     private RepoService repoService;
     /**
-     * star服务.
+     *   watch服务.
      */
     @Autowired
-    private StarService starService;
+    private WatchService watchService;
 
     /**
      * 执行 拉取并更新指定组织下仓库信息.
@@ -64,36 +62,37 @@ public class GitCodeStarProcess implements DriverManager {
     @Override
     public void run() {
         List<RepoDO> repoDOList = repoService.list();
-        List<StarDO> starDOList = new ArrayList<>();
+        List<WatchDO> prList = new ArrayList<>();
         for (RepoDO repoDO : repoDOList) {
-            starDOList.addAll(getStarList(repoDO));
+            prList.addAll(getWatchList(repoDO));
         }
-        starService.saveOrUpdateBatch(starDOList);
+        watchService.saveOrUpdateBatch(prList);
     }
 
     /**
-     * 获取GitCode平台仓库下Star信息.
+     * 获取GitCode平台仓库下PR信息.
      *
      * @param repoDO 仓库信息
-     * @return Star信息字符串
+     * @return Watch信息字符串
      */
-    private List<StarDO> getStarList(RepoDO repoDO) {
-        return formatStr(repoDO, client.getStarInfo(repoDO.getOwnerName(), repoDO.getRepoName()));
+    private List<WatchDO> getWatchList(RepoDO repoDO) {
+        return formatStr(repoDO, client.getWatchInfo(repoDO.getOwnerName(), repoDO.getRepoName()));
     }
 
     /**
-     * 转化并组装StarDO数据.
+     * 转化并组装WatchDO数据.
      *
      * @param repoDO        仓库信息
-     * @param arrayNodeList Star的ArryNode信息
-     * @return Stardo 对象
+     * @param arrayNodeList watch信息
+     * @return watchdo 对象
      */
-    private List<StarDO> formatStr(RepoDO repoDO, List<ArrayNode> arrayNodeList) {
-        List<StarDO> prDOList = new ArrayList<>();
+
+    private List<WatchDO> formatStr(RepoDO repoDO, List<ArrayNode> arrayNodeList) {
+        List<WatchDO> watchDOList = new ArrayList<>();
         for (ArrayNode arrayNode : arrayNodeList) {
-            prDOList.addAll(converter.toDOList(arrayNode, repoDO.getOwnerName(), repoDO.getRepoName(),
-                    CodePlatformEnum.GITCODE.getText()));
+            watchDOList.addAll(converter.toDOList(arrayNode, repoDO.getOwnerName(), repoDO.getRepoName(),
+                    CodePlatformEnum.GITEE.getText()));
         }
-        return prDOList;
+        return watchDOList;
     }
 }

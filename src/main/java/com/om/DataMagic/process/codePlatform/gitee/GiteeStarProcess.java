@@ -10,11 +10,10 @@
  Created: 2025
 */
 
-package com.om.DataMagic.process.codePlatform.gitcode;
+package com.om.DataMagic.process.codePlatform.gitee;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.om.DataMagic.client.codePlatform.gitcode.GitCodeService;
-import com.om.DataMagic.client.codePlatform.gitcode.GitCodeClient;
+import com.om.DataMagic.client.codePlatform.gitee.GiteeClient;
 import com.om.DataMagic.domain.codePlatform.gitcode.primitive.CodePlatformEnum;
 import com.om.DataMagic.infrastructure.pgDB.converter.StarConverter;
 import com.om.DataMagic.infrastructure.pgDB.dataobject.RepoDO;
@@ -29,31 +28,31 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * pr application service.
+ * star application service.
  *
  * @author pengyue
  * @since 2025-01-15
  */
 @Component
-public class GitCodeStarProcess implements DriverManager {
+public class GiteeStarProcess implements DriverManager {
 
     /**
-     * client gitcode接口统一调用客户端.
+     *  client gitee接口统一调用客户端.
      */
     @Autowired
-    private GitCodeClient client;
+    private GiteeClient client;
     /**
-     * converter json类型转换.
+     *  converter json类型转换.
      */
     @Autowired
     private StarConverter converter;
     /**
-     * 仓库服务.
+     *   仓库服务.
      */
     @Autowired
     private RepoService repoService;
     /**
-     * star服务.
+     *   star服务.
      */
     @Autowired
     private StarService starService;
@@ -64,11 +63,11 @@ public class GitCodeStarProcess implements DriverManager {
     @Override
     public void run() {
         List<RepoDO> repoDOList = repoService.list();
-        List<StarDO> starDOList = new ArrayList<>();
+        List<StarDO> prList = new ArrayList<>();
         for (RepoDO repoDO : repoDOList) {
-            starDOList.addAll(getStarList(repoDO));
+            prList.addAll(getStarList(repoDO));
         }
-        starService.saveOrUpdateBatch(starDOList);
+        starService.saveOrUpdateBatch(prList);
     }
 
     /**
@@ -92,7 +91,7 @@ public class GitCodeStarProcess implements DriverManager {
         List<StarDO> prDOList = new ArrayList<>();
         for (ArrayNode arrayNode : arrayNodeList) {
             prDOList.addAll(converter.toDOList(arrayNode, repoDO.getOwnerName(), repoDO.getRepoName(),
-                    CodePlatformEnum.GITCODE.getText()));
+                    CodePlatformEnum.GITEE.getText()));
         }
         return prDOList;
     }

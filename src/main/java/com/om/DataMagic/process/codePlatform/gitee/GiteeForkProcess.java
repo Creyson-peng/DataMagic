@@ -10,17 +10,16 @@
  Created: 2025
 */
 
-package com.om.DataMagic.process.codePlatform.gitcode;
+package com.om.DataMagic.process.codePlatform.gitee;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.om.DataMagic.client.codePlatform.gitcode.GitCodeService;
-import com.om.DataMagic.client.codePlatform.gitcode.GitCodeClient;
+import com.om.DataMagic.client.codePlatform.gitee.GiteeClient;
 import com.om.DataMagic.domain.codePlatform.gitcode.primitive.CodePlatformEnum;
-import com.om.DataMagic.infrastructure.pgDB.converter.StarConverter;
+import com.om.DataMagic.infrastructure.pgDB.converter.ForkConverter;
+import com.om.DataMagic.infrastructure.pgDB.dataobject.ForkDO;
 import com.om.DataMagic.infrastructure.pgDB.dataobject.RepoDO;
-import com.om.DataMagic.infrastructure.pgDB.dataobject.StarDO;
+import com.om.DataMagic.infrastructure.pgDB.service.ForkService;
 import com.om.DataMagic.infrastructure.pgDB.service.RepoService;
-import com.om.DataMagic.infrastructure.pgDB.service.StarService;
 import com.om.DataMagic.process.DriverManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -31,32 +30,32 @@ import java.util.List;
 /**
  * pr application service.
  *
- * @author pengyue
+ * @author zhaoyan
  * @since 2025-01-15
  */
 @Component
-public class GitCodeStarProcess implements DriverManager {
+public class GiteeForkProcess implements DriverManager {
 
-    /**
-     * client gitcode接口统一调用客户端.
+    /***
+     *  client gitee接口统一调用客户端.
      */
     @Autowired
-    private GitCodeClient client;
+    private GiteeClient client;
     /**
-     * converter json类型转换.
+     *  converter json类型转换.
      */
     @Autowired
-    private StarConverter converter;
+    private ForkConverter converter;
     /**
-     * 仓库服务.
+     *   仓库服务.
      */
     @Autowired
     private RepoService repoService;
     /**
-     * star服务.
+     *   fork服务.
      */
     @Autowired
-    private StarService starService;
+    private ForkService forkService;
 
     /**
      * 执行 拉取并更新指定组织下仓库信息.
@@ -64,35 +63,35 @@ public class GitCodeStarProcess implements DriverManager {
     @Override
     public void run() {
         List<RepoDO> repoDOList = repoService.list();
-        List<StarDO> starDOList = new ArrayList<>();
+        List<ForkDO> prList = new ArrayList<>();
         for (RepoDO repoDO : repoDOList) {
-            starDOList.addAll(getStarList(repoDO));
+            prList.addAll(getForkList(repoDO));
         }
-        starService.saveOrUpdateBatch(starDOList);
+        forkService.saveOrUpdateBatch(prList);
     }
 
     /**
-     * 获取GitCode平台仓库下Star信息.
+     * 获取GitCode平台仓库下Fork信息.
      *
      * @param repoDO 仓库信息
-     * @return Star信息字符串
+     * @return Fork信息字符串
      */
-    private List<StarDO> getStarList(RepoDO repoDO) {
-        return formatStr(repoDO, client.getStarInfo(repoDO.getOwnerName(), repoDO.getRepoName()));
+    private List<ForkDO> getForkList(RepoDO repoDO) {
+        return formatStr(repoDO, client.getForkInfo(repoDO.getOwnerName(), repoDO.getRepoName()));
     }
 
     /**
-     * 转化并组装StarDO数据.
+     * 转化并组装ForkDO数据.
      *
      * @param repoDO        仓库信息
-     * @param arrayNodeList Star的ArryNode信息
-     * @return Stardo 对象
+     * @param arrayNodeList pr信息字符串
+     * @return ForkDO 对象
      */
-    private List<StarDO> formatStr(RepoDO repoDO, List<ArrayNode> arrayNodeList) {
-        List<StarDO> prDOList = new ArrayList<>();
+    private List<ForkDO> formatStr(RepoDO repoDO, List<ArrayNode> arrayNodeList) {
+        List<ForkDO> prDOList = new ArrayList<>();
         for (ArrayNode arrayNode : arrayNodeList) {
             prDOList.addAll(converter.toDOList(arrayNode, repoDO.getOwnerName(), repoDO.getRepoName(),
-                    CodePlatformEnum.GITCODE.getText()));
+                    CodePlatformEnum.GITEE.getText()));
         }
         return prDOList;
     }
