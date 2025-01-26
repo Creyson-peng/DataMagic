@@ -13,7 +13,7 @@
 package com.om.DataMagic.process.codePlatform.gitee;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.om.DataMagic.client.codePlatform.gitee.GiteeClient;
+import com.om.DataMagic.client.codePlatform.gitee.GiteeService;
 import com.om.DataMagic.domain.codePlatform.gitcode.primitive.CodePlatformEnum;
 import com.om.DataMagic.infrastructure.pgDB.converter.ForkConverter;
 import com.om.DataMagic.infrastructure.pgDB.dataobject.ForkDO;
@@ -40,7 +40,7 @@ public class GiteeForkProcess implements DriverManager {
      *  client gitee接口统一调用客户端.
      */
     @Autowired
-    private GiteeClient client;
+    private GiteeService service;
     /**
      *  converter json类型转换.
      */
@@ -77,7 +77,7 @@ public class GiteeForkProcess implements DriverManager {
      * @return Fork信息字符串
      */
     private List<ForkDO> getForkList(RepoDO repoDO) {
-        return formatStr(repoDO, client.getForkInfo(repoDO.getOwnerName(), repoDO.getRepoName()));
+        return formatStr(repoDO, service.getForkInfo(repoDO.getOwnerName(), repoDO.getRepoName()));
     }
 
     /**

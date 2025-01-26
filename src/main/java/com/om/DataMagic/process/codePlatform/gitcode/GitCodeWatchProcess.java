@@ -14,7 +14,6 @@ package com.om.DataMagic.process.codePlatform.gitcode;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.om.DataMagic.client.codePlatform.gitcode.GitCodeService;
-import com.om.DataMagic.client.codePlatform.gitcode.GitCodeClient;
 import com.om.DataMagic.domain.codePlatform.gitcode.primitive.CodePlatformEnum;
 import com.om.DataMagic.infrastructure.pgDB.converter.WatchConverter;
 import com.om.DataMagic.infrastructure.pgDB.dataobject.RepoDO;
@@ -41,7 +40,7 @@ public class GitCodeWatchProcess implements DriverManager {
      * client gitee接口统一调用客户端.
      */
     @Autowired
-    private GitCodeClient client;
+    private GitCodeService service;
     /**
      * converter json类型转换.
      */
@@ -78,7 +77,7 @@ public class GitCodeWatchProcess implements DriverManager {
      * @return Watch信息字符串
      */
     private List<WatchDO> getWatchList(RepoDO repoDO) {
-        return formatStr(repoDO, client.getWatchInfo(repoDO.getOwnerName(), repoDO.getRepoName()));
+        return formatStr(repoDO, service.getWatchInfo(repoDO.getOwnerName(), repoDO.getRepoName()));
     }
 
     /**

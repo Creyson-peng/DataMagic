@@ -14,7 +14,6 @@ package com.om.DataMagic.process.codePlatform.gitcode;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.om.DataMagic.client.codePlatform.gitcode.GitCodeService;
-import com.om.DataMagic.client.codePlatform.gitcode.GitCodeClient;
 import com.om.DataMagic.domain.codePlatform.gitcode.primitive.CodePlatformEnum;
 import com.om.DataMagic.infrastructure.pgDB.converter.StarConverter;
 import com.om.DataMagic.infrastructure.pgDB.dataobject.RepoDO;
@@ -41,7 +40,7 @@ public class GitCodeStarProcess implements DriverManager {
      * client gitcode接口统一调用客户端.
      */
     @Autowired
-    private GitCodeClient client;
+    private GitCodeService client;
     /**
      * converter json类型转换.
      */
