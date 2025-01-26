@@ -14,7 +14,6 @@ package com.om.DataMagic.process.codePlatform.gitee;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.om.DataMagic.client.codePlatform.gitee.GiteeClient;
-import com.om.DataMagic.common.util.ObjectMapperUtil;
 import com.om.DataMagic.domain.codePlatform.gitcode.primitive.CodePlatformEnum;
 import com.om.DataMagic.infrastructure.pgDB.converter.ForkConverter;
 import com.om.DataMagic.infrastructure.pgDB.dataobject.ForkDO;
@@ -29,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * pr application service
+ * pr application service.
  *
  * @author zhaoyan
  * @since 2025-01-15
@@ -37,20 +36,29 @@ import java.util.List;
 @Component
 public class GiteeForkProcess implements DriverManager {
 
+    /***
+     *  client gitee接口统一调用客户端.
+     */
     @Autowired
-    GiteeClient client;
-
+    private GiteeClient client;
+    /**
+     *  converter json类型转换.
+     */
     @Autowired
-    ForkConverter converter;
-
+    private ForkConverter converter;
+    /**
+     *   仓库服务.
+     */
     @Autowired
-    RepoService repoService;
-
+    private RepoService repoService;
+    /**
+     *   fork服务.
+     */
     @Autowired
-    ForkService forkService;
+    private ForkService forkService;
 
     /**
-     * 执行 拉取并更新指定组织下仓库信息
+     * 执行 拉取并更新指定组织下仓库信息.
      */
     @Override
     public void run() {
@@ -61,24 +69,29 @@ public class GiteeForkProcess implements DriverManager {
         }
         forkService.saveOrUpdateBatch(prList);
     }
+
     /**
-     * 获取GitCode平台仓库下Fork信息
+     * 获取GitCode平台仓库下Fork信息.
+     *
      * @param repoDO 仓库信息
      * @return Fork信息字符串
      */
     private List<ForkDO> getForkList(RepoDO repoDO) {
         return formatStr(repoDO, client.getForkInfo(repoDO.getOwnerName(), repoDO.getRepoName()));
     }
+
     /**
-     * 转化并组装ForkDO数据
-     * @param repoDO     仓库信息
+     * 转化并组装ForkDO数据.
+     *
+     * @param repoDO        仓库信息
      * @param arrayNodeList pr信息字符串
      * @return ForkDO 对象
      */
     private List<ForkDO> formatStr(RepoDO repoDO, List<ArrayNode> arrayNodeList) {
         List<ForkDO> prDOList = new ArrayList<>();
         for (ArrayNode arrayNode : arrayNodeList) {
-            prDOList.addAll(converter.toDOList(arrayNode, repoDO.getOwnerName(),repoDO.getRepoName(), CodePlatformEnum.GITEE.getText()));
+            prDOList.addAll(converter.toDOList(arrayNode, repoDO.getOwnerName(), repoDO.getRepoName(),
+                    CodePlatformEnum.GITEE.getText()));
         }
         return prDOList;
     }

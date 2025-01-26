@@ -14,12 +14,9 @@ package com.om.DataMagic.process.codePlatform.gitee;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.om.DataMagic.client.codePlatform.gitee.GiteeClient;
-import com.om.DataMagic.common.util.ObjectMapperUtil;
 import com.om.DataMagic.domain.codePlatform.gitcode.primitive.CodePlatformEnum;
-import com.om.DataMagic.domain.codePlatform.gitcode.primitive.GitCodeConstant;
 import com.om.DataMagic.infrastructure.pgDB.converter.WatchConverter;
 import com.om.DataMagic.infrastructure.pgDB.dataobject.RepoDO;
-import com.om.DataMagic.infrastructure.pgDB.dataobject.StarDO;
 import com.om.DataMagic.infrastructure.pgDB.dataobject.WatchDO;
 import com.om.DataMagic.infrastructure.pgDB.service.RepoService;
 import com.om.DataMagic.infrastructure.pgDB.service.WatchService;
@@ -31,27 +28,36 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * watch application service
+ * watch application service.
+ *
  * @author pengyue
  * @since 2025-01-15
  */
 @Component
 public class GiteeWatchProcess implements DriverManager {
-
+    /**
+     *  client gitee接口统一调用客户端.
+     */
     @Autowired
-    GiteeClient client;
-
+    private GiteeClient client;
+    /**
+     *  converter json类型转换.
+     */
     @Autowired
-    WatchConverter converter;
-
+    private WatchConverter converter;
+    /**
+     *  client 仓库服务.
+     */
     @Autowired
-    RepoService repoService;
-
+    private RepoService repoService;
+    /**
+     *   watch服务.
+     */
     @Autowired
-    WatchService watchService;
+    private WatchService watchService;
 
     /**
-     * 执行 拉取并更新指定组织下仓库信息
+     * 执行 拉取并更新指定组织下仓库信息.
      */
     @Override
     public void run() {
@@ -62,17 +68,21 @@ public class GiteeWatchProcess implements DriverManager {
         }
         watchService.saveOrUpdateBatch(prList);
     }
+
     /**
-     * 获取GitCode平台仓库下PR信息
+     * 获取GitCode平台仓库下PR信息.
+     *
      * @param repoDO 仓库信息
      * @return Watch信息字符串
      */
     private List<WatchDO> getWatchList(RepoDO repoDO) {
         return formatStr(repoDO, client.getWatchInfo(repoDO.getOwnerName(), repoDO.getRepoName()));
     }
+
     /**
-     * 转化并组装WatchDO数据
-     * @param repoDO     仓库信息
+     * 转化并组装WatchDO数据.
+     *
+     * @param repoDO        仓库信息
      * @param arrayNodeList watch信息
      * @return watchdo 对象
      */
@@ -80,7 +90,8 @@ public class GiteeWatchProcess implements DriverManager {
     private List<WatchDO> formatStr(RepoDO repoDO, List<ArrayNode> arrayNodeList) {
         List<WatchDO> watchDOList = new ArrayList<>();
         for (ArrayNode arrayNode : arrayNodeList) {
-            watchDOList.addAll(converter.toDOList(arrayNode, repoDO.getOwnerName(),repoDO.getRepoName(), CodePlatformEnum.GITEE.getText()));
+            watchDOList.addAll(converter.toDOList(arrayNode, repoDO.getOwnerName(), repoDO.getRepoName(),
+                    CodePlatformEnum.GITEE.getText()));
         }
         return watchDOList;
     }

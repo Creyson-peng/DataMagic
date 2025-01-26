@@ -13,9 +13,6 @@
 package com.om.DataMagic.client.codePlatform.gitee;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.om.DataMagic.client.codePlatform.gitcode.GitCodeClient;
-import com.om.DataMagic.common.config.PlatformAccessConfig;
-import com.om.DataMagic.common.config.PlatformBaseApiConfig;
 import com.om.DataMagic.common.config.TaskConfig;
 import com.om.DataMagic.common.util.HttpClientUtil;
 import com.om.DataMagic.common.util.ObjectMapperUtil;
@@ -38,18 +35,18 @@ import java.util.Map;
 public class GiteeClient {
 
 
+    /**
+     * 配置信息.
+     */
     @Autowired
-    TaskConfig config;
+    private TaskConfig config;
 
+    /**
+     * http客户端.
+     */
     @Autowired
-    HttpClientUtil client;
+    private HttpClientUtil client;
 
-
-    @Autowired
-    PlatformAccessConfig accessConfig;
-
-    @Autowired
-    PlatformBaseApiConfig baseApiConfig;
 
     /**
      * Logger for logging messages in App class.
@@ -89,10 +86,15 @@ public class GiteeClient {
         return response;
     }
 
+    /**
+     * @param path   接口path.
+     * @param params
+     * @return 返回查询结果信息
+     */
     public String callApiByPlatform(String path, Map<String, String> params) {
         String url = "";
         try {
-            URIBuilder uriBuilder = new URIBuilder(baseApiConfig.getGitee() + path);
+            URIBuilder uriBuilder = new URIBuilder(config.getBaseApi() + path);
             if (params != null && !params.isEmpty()) {
                 for (Map.Entry<String, String> entry : params.entrySet()) {
                     uriBuilder.addParameter(entry.getKey(), entry.getValue());
@@ -103,7 +105,7 @@ public class GiteeClient {
             throw new RuntimeException(e.getMessage());
         }
 
-        Header header = new BasicHeader("Authorization", "Bearer " + accessConfig.getGitee());
+        Header header = new BasicHeader("Authorization", "Bearer " + config.getToken());
 
         String response = "";
         try {
@@ -115,58 +117,64 @@ public class GiteeClient {
     }
 
     /**
-     * 分页获取仓库所有者下的某个仓库的star数据
+     * 分页获取仓库所有者下的某个仓库的star数据.
+     *
      * @param ownerName 仓库所有者
-     * @param repoName 仓库名称
+     * @param repoName  仓库名称
      * @return star数据字符串
      */
     public List<ArrayNode> getStarInfo(String ownerName, String repoName) {
-        return geGitCodeArrayNodeByApi("/repos/%s/%s/stargazers",ownerName,repoName);
+        return geGitCodeArrayNodeByApi("/repos/%s/%s/stargazers", ownerName, repoName);
     }
 
     /**
-     * 分页获取仓库所有者下的某个仓库的watch数据
+     * 分页获取仓库所有者下的某个仓库的watch数据.
+     *
      * @param ownerName 仓库所有者
-     * @param repoName 仓库名称
+     * @param repoName  仓库名称
      * @return issue数据字符串
      */
     public List<ArrayNode> getWatchInfo(String ownerName, String repoName) {
-        return geGitCodeArrayNodeByApi("/repos/%s/%s/subscribers",ownerName,repoName);
-    }
-    /**
-     * 分页获取仓库所有者下的某个仓库的fork数据
-     * @param ownerName 仓库所有者
-     * @param repoName 仓库名称
-     * @return fork数据字符串
-     */
-    public List<ArrayNode> getForkInfo(String ownerName, String repoName) {
-        return geGitCodeArrayNodeByApi("/repos/%s/%s/forks",ownerName,repoName);
+        return geGitCodeArrayNodeByApi("/repos/%s/%s/subscribers", ownerName, repoName);
     }
 
     /**
-     * 分页获取仓库所有者下的某个仓库的分页接口的数据
+     * 分页获取仓库所有者下的某个仓库的fork数据.
+     *
      * @param ownerName 仓库所有者
-     * @param repoName 仓库名称
+     * @param repoName  仓库名称
+     * @return fork数据字符串
+     */
+    public List<ArrayNode> getForkInfo(String ownerName, String repoName) {
+        return geGitCodeArrayNodeByApi("/repos/%s/%s/forks", ownerName, repoName);
+    }
+
+    /**
+     * 分页获取仓库所有者下的某个仓库的分页接口的数据.
+     *
+     * @param ownerName 仓库所有者
+     * @param repoName  仓库名称
+     * @param api       仓库名称
      * @return 接口返回的json数据字符串
      */
-    public List<ArrayNode> geGitCodeArrayNodeByApi(String api,String ownerName, String repoName) {
+    public List<ArrayNode> geGitCodeArrayNodeByApi(String api, String ownerName, String repoName) {
         String path = String.format(api, ownerName, repoName);
-        Map<String,String> params = new HashMap<>();
+        Map<String, String> params = new HashMap<>();
         int page = 1;
         params.put("per_page", String.valueOf(GitCodeConstant.MAX_PER_PAGE));
-        params.put("access_token",accessConfig.getGitee());
+        params.put("access_token", config.getToken());
         List<ArrayNode> list = new ArrayList<>();
         while (true) {
             params.put("page", String.valueOf(page));
-            String jsonInfo = callApiByPlatform(path,params);
+            String jsonInfo = callApiByPlatform(path, params);
             try {
                 ArrayNode object = ObjectMapperUtil.toObject(ArrayNode.class, jsonInfo);
                 list.add(object);
                 if (object.size() < GitCodeConstant.MAX_PER_PAGE) {
                     break;
                 }
-            }catch (Exception e) {
-                LOGGER.error("api:{},response:{}",path,jsonInfo);
+            } catch (Exception e) {
+                LOGGER.error("api:{},response:{}", path, jsonInfo);
                 LOGGER.error("接口获取数据失败");
                 break;
             }

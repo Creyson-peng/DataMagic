@@ -18,7 +18,7 @@ import java.time.Duration;
 import java.time.OffsetDateTime;
 
 /**
- * 注释
+ * 注释.
  *
  * @author zhaoyan
  * @since 2025-01-16

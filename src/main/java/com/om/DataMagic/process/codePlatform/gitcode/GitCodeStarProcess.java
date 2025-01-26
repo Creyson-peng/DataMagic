@@ -14,9 +14,7 @@ package com.om.DataMagic.process.codePlatform.gitcode;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.om.DataMagic.client.codePlatform.gitcode.GitCodeClient;
-import com.om.DataMagic.common.util.ObjectMapperUtil;
 import com.om.DataMagic.domain.codePlatform.gitcode.primitive.CodePlatformEnum;
-import com.om.DataMagic.domain.codePlatform.gitcode.primitive.GitCodeConstant;
 import com.om.DataMagic.infrastructure.pgDB.converter.StarConverter;
 import com.om.DataMagic.infrastructure.pgDB.dataobject.RepoDO;
 import com.om.DataMagic.infrastructure.pgDB.dataobject.StarDO;
@@ -30,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * pr application service
+ * pr application service.
  *
  * @author pengyue
  * @since 2025-01-15
@@ -38,19 +36,29 @@ import java.util.List;
 @Component
 public class GitCodeStarProcess implements DriverManager {
 
-    @Autowired
-    GitCodeClient client;
-
-    @Autowired
-    StarConverter converter;
-
-    @Autowired
-    RepoService repoService;
-
-    @Autowired
-    StarService starService;
     /**
-     * 执行 拉取并更新指定组织下仓库信息
+     * client gitcode接口统一调用客户端.
+     */
+    @Autowired
+    private GitCodeClient client;
+    /**
+     * converter json类型转换.
+     */
+    @Autowired
+    private StarConverter converter;
+    /**
+     * 仓库服务.
+     */
+    @Autowired
+    private RepoService repoService;
+    /**
+     * star服务.
+     */
+    @Autowired
+    private StarService starService;
+
+    /**
+     * 执行 拉取并更新指定组织下仓库信息.
      */
     @Override
     public void run() {
@@ -63,24 +71,27 @@ public class GitCodeStarProcess implements DriverManager {
     }
 
     /**
-     * 获取GitCode平台仓库下Star信息
+     * 获取GitCode平台仓库下Star信息.
+     *
      * @param repoDO 仓库信息
      * @return Star信息字符串
      */
     private List<StarDO> getStarList(RepoDO repoDO) {
-        return formatStr(repoDO, client.getStarInfo(repoDO.getOwnerName(),repoDO.getRepoName()));
+        return formatStr(repoDO, client.getStarInfo(repoDO.getOwnerName(), repoDO.getRepoName()));
     }
 
     /**
-     * 转化并组装StarDO数据
-     * @param repoDO     仓库信息
+     * 转化并组装StarDO数据.
+     *
+     * @param repoDO        仓库信息
      * @param arrayNodeList Star的ArryNode信息
      * @return Stardo 对象
      */
     private List<StarDO> formatStr(RepoDO repoDO, List<ArrayNode> arrayNodeList) {
         List<StarDO> prDOList = new ArrayList<>();
         for (ArrayNode arrayNode : arrayNodeList) {
-            prDOList.addAll(converter.toDOList(arrayNode, repoDO.getOwnerName(),repoDO.getRepoName(), CodePlatformEnum.GITCODE.getText()));
+            prDOList.addAll(converter.toDOList(arrayNode, repoDO.getOwnerName(), repoDO.getRepoName(),
+                    CodePlatformEnum.GITCODE.getText()));
         }
         return prDOList;
     }
